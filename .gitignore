@@ -1,0 +1,5 @@
+.gradle/*
+core/.gradle/*
+core/build/*
+core/.idea/*
+core/.DS_Store
