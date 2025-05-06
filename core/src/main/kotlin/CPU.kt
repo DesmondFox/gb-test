@@ -3,7 +3,7 @@ package com.gh.desmondfox
 private typealias Instruction = (CPU) -> Int
 
 class CPU(
-    private val registers: Registers,
+    private val registers: Registers = Registers(),
     private val mmu: MMU,
 ) {
     var cycles: Long = 0L
