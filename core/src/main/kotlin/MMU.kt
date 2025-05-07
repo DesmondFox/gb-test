@@ -18,8 +18,10 @@ class MMU(
             in 0xC000..0xCFFF -> return wram[address - 0xC000].toInt() and 0xFF // Read from WRAM
             in 0xD000..0xDFFF -> return wram[address - 0xC000].toInt() and 0xFF // Read from WRAM
             in 0xE000..0xFDFF -> return wram[address - 0x2000].toInt() and 0xFF // Read from echo RAM
-
-            0xFF0F -> return interruptController.readIF() // Read from IF register
+            in 0xFE00..0xFE9F -> return ppu.readOam(address) // Read from OAM
+            in 0xFEA0..0xFEFF -> return 0xFF // Unusable area
+            in 0xFF00..0xFF7F -> return readIORegister(address) // Read from IO registers
+//            0xFF0F -> return interruptController.readIF() // Read from IF register
             in 0xFF80..0xFFFE -> return hram[address - 0xFF80].toInt() and 0xFF // Read from HRAM
             0xFFFF -> return interruptController.readIE() // Read from IE register
             else -> {
@@ -44,8 +46,10 @@ class MMU(
             in 0xC000..0xCFFF -> wram[addr - 0xC000] = byteValue // Write to WRAM
             in 0xD000..0xDFFF -> wram[addr - 0xC000] = byteValue // Write to WRAM
             in 0xE000..0xFDFF -> wram[addr - 0x2000] = byteValue // Write to echo RAM
-
-            0xFF0F -> interruptController.writeIF(byteValue) // Write to IF register
+            in 0xFE00..0xFE9F -> ppu.writeOam(addr, byteValue) // Write to OAM
+            in 0xFEA0..0xFEFF -> {} // Unusable area
+            in 0xFF00..0xFF7F -> writeIORegister(addr) // Write to IO registers
+//            0xFF0F -> interruptController.writeIF(byteValue) // Write to IF register
             in 0xFF80..0xFFFE -> hram[addr - 0xFF80] = byteValue // Write to HRAM
             0xFFFF -> interruptController.writeIE(byteValue) // Write to IE register
             else -> {
@@ -65,5 +69,13 @@ class MMU(
         val high = (value shr 8) and 0xFF
         writeByte(address, low)
         writeByte(address + 1, high)
+    }
+
+    fun readIORegister(address: Int): Int {
+        return 0xFF // TODO: Implement IO register read
+    }
+
+    private fun writeIORegister(addr: Int) {
+
     }
 }

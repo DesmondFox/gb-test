@@ -3,15 +3,18 @@ package com.gh.desmondfox
 private typealias Instruction = (CPU) -> Int
 
 class CPU(
-    private val registers: Registers = Registers(),
-    private val mmu: MMU,
+    val registers: Registers = Registers(),
+    val mmu: MMU,
 ) {
     var cycles: Long = 0L
 
     // Interrupt Master Enable
     var ime: Boolean = false
 
-    private val opcodes: Array<Instruction> = Array(256) { { _: CPU -> 0 } }
+    private val opcodes: Array<Instruction> = Array(256) { { _: CPU ->
+        throw IllegalStateException("Unimplemented opcode: 0x${it.toString(16).padStart(4, '0')}")
+        0
+    } }
     private val cbOpcodes: Array<Instruction> = Array(256) { { _: CPU -> 0 } }
 
     init {
@@ -49,6 +52,12 @@ class CPU(
     private fun initializeOpcodes() {
         // TODO: Initialize opcodes
         opcodes[0x00] = Opcodes::op0x00 // NOP
+
+        // Jumps
+        opcodes[0xC3] = Opcodes::op0xC3 // JP a16
+
+        // LD instructions
+        opcodes[0x21] = Opcodes::ld_hl_a16 // LD HL, a16
     }
 
     private fun initializeCBOpcodes() {
