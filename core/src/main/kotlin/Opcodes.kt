@@ -25,9 +25,15 @@ object Opcodes {
     }
 
     // LD r8, r8
-    fun LDr8r8(cyclesCount: Int, setReg: (Int) -> Unit, getReg: (CPU) -> Int): (CPU) -> Int = { cpu ->
+    fun LDr8r8(
+        cyclesCount: Int,
+        setReg: (Int) -> Unit,
+        getReg: (CPU) -> Int,
+        doAfter: (CPU) -> Unit = {},
+    ): (CPU) -> Int = { cpu ->
         val value = getReg(cpu)
         setReg(value)
+        doAfter(cpu)
 
         cyclesCount
     }
@@ -39,4 +45,12 @@ object Opcodes {
         cyclesCount
     }
 
+
+    fun incHL(cpu: CPU) {
+        cpu.registers.hl = (cpu.registers.hl + 1) and 0xFFFF
+    }
+
+    fun decHL(cpu: CPU) {
+        cpu.registers.hl = (cpu.registers.hl - 1) and 0xFFFF
+    }
 }

@@ -11,10 +11,12 @@ class CPU(
     // Interrupt Master Enable
     var ime: Boolean = false
 
-    private val opcodes: Array<Instruction> = Array(256) { { _: CPU ->
-        throw IllegalStateException("Unimplemented opcode: 0x${it.toString(16).padStart(4, '0')}")
-        0
-    } }
+    private val opcodes: Array<Instruction> = Array(256) {
+        { _: CPU ->
+            throw IllegalStateException("Unimplemented opcode: 0x${it.toString(16).padStart(4, '0')}")
+            0
+        }
+    }
     private val cbOpcodes: Array<Instruction> = Array(256) { { _: CPU -> 0 } }
 
     init {
@@ -46,7 +48,11 @@ class CPU(
 
         cycles += cyclesUsed
 
-        println("Opcode: 0x${opcode.toString(16).padStart(2, '0')} | Cycles: $cycles | PC: 0x${registers.pc.toString(16).padStart(4, '0')}")
+        println(
+            "Opcode: 0x${opcode.toString(16).padStart(2, '0')} | Cycles: $cycles | PC: 0x${
+                registers.pc.toString(16).padStart(4, '0')
+            }"
+        )
         return cycles
     }
 
@@ -133,6 +139,27 @@ class CPU(
         opcodes[0x0A] = Opcodes.LDr8r8(2, { registers.a = it }, { mmu.readByte(registers.bc) }) // LD A, (BC)
         opcodes[0x1A] = Opcodes.LDr8r8(2, { registers.a = it }, { mmu.readByte(registers.de) }) // LD A, (DE)
 
+        opcodes[0x22] = Opcodes.LDr8r8(
+            2,
+            { mmu.writeByte(registers.hl, it) },
+            { registers.a },
+            { Opcodes.incHL(this) }) // LD (HL+), A
+        opcodes[0x32] = Opcodes.LDr8r8(
+            2,
+            { mmu.writeByte(registers.hl, it) },
+            { registers.a },
+            { Opcodes.decHL(this) }) // LD (HL-), A
+        opcodes[0x2A] = Opcodes.LDr8r8(
+            2,
+            { registers.a = it },
+            { mmu.readByte(registers.hl) },
+            { Opcodes.incHL(this) }) // LD A, (HL+)
+        opcodes[0x3A] = Opcodes.LDr8r8(
+            2,
+            { registers.a = it },
+            { mmu.readByte(registers.hl) },
+            { Opcodes.decHL(this) }) // LD A, (HL-)
+
         // LD r8, d8
         opcodes[0x0E] = Opcodes.LDrd8 { registers.c = it } // LD C, d8
         opcodes[0x1E] = Opcodes.LDrd8 { registers.e = it } // LD E, d8
@@ -140,6 +167,7 @@ class CPU(
         opcodes[0x3E] = Opcodes.LDrd8 { registers.a = it } // LD A, d8
         opcodes[0x26] = Opcodes.LDrd8 { registers.h = it } // LD H, d8
         opcodes[0x36] = Opcodes.LDrd8(3) { mmu.writeByte(registers.hl, it) } // LD (HL), d8
+
 
     }
 
