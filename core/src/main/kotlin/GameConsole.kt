@@ -27,7 +27,6 @@ class GameConsole {
         // Start the CPU
         while (true) {
             val cycles = cpu.step()
-            println("Cycles: $cycles")
             // Add a delay to simulate the CPU speed
             Thread.sleep(16) // Adjust the delay as needed
         }

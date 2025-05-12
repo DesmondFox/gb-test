@@ -31,7 +31,7 @@ class CPU(
         registers.hl = 0x014D // Initial value of HL register
     }
 
-    fun step(): Int {
+    fun step(): Long {
         val handledInterruptCycles = handleInterrupts()
         if (handledInterruptCycles > 0) {
             cycles += handledInterruptCycles
@@ -46,7 +46,8 @@ class CPU(
 
         cycles += cyclesUsed
 
-        return cyclesUsed
+        println("Opcode: 0x${opcode.toString(16).padStart(2, '0')} | Cycles: $cycles | PC: 0x${registers.pc.toString(16).padStart(4, '0')}")
+        return cycles
     }
 
     private fun initializeOpcodes() {
@@ -56,11 +57,11 @@ class CPU(
         // Jumps
         opcodes[0xC3] = Opcodes::op0xC3 // JP a16
 
-        // LD, d16 instructions
-        opcodes[0x01] = Opcodes.ldRRD16 { registers.bc = it } // LD BC, d16
-        opcodes[0x11] = Opcodes.ldRRD16 { registers.de = it } // LD DE, d16
-        opcodes[0x21] = Opcodes.ldRRD16 { registers.hl = it } // LD HL, d16
-        opcodes[0x31] = Opcodes.ldRRD16 { registers.sp = it } // LD SP, d16
+        // LD d16, r16
+        opcodes[0x01] = Opcodes.LDr16d16 { registers.bc = it } // LD BC, d16
+        opcodes[0x11] = Opcodes.LDr16d16 { registers.de = it } // LD DE, d16
+        opcodes[0x21] = Opcodes.LDr16d16 { registers.hl = it } // LD HL, d16
+        opcodes[0x31] = Opcodes.LDr16d16 { registers.sp = it } // LD SP, d16
 
         // LD r8, r8
         opcodes[0x40] = Opcodes.LDr8r8(1, { registers.b = it }, { registers.b }) // LD B, B
@@ -132,7 +133,13 @@ class CPU(
         opcodes[0x0A] = Opcodes.LDr8r8(2, { registers.a = it }, { mmu.readByte(registers.bc) }) // LD A, (BC)
         opcodes[0x1A] = Opcodes.LDr8r8(2, { registers.a = it }, { mmu.readByte(registers.de) }) // LD A, (DE)
 
-
+        // LD r8, d8
+        opcodes[0x0E] = Opcodes.LDrd8 { registers.c = it } // LD C, d8
+        opcodes[0x1E] = Opcodes.LDrd8 { registers.e = it } // LD E, d8
+        opcodes[0x2E] = Opcodes.LDrd8 { registers.l = it } // LD L, d8
+        opcodes[0x3E] = Opcodes.LDrd8 { registers.a = it } // LD A, d8
+        opcodes[0x26] = Opcodes.LDrd8 { registers.h = it } // LD H, d8
+        opcodes[0x36] = Opcodes.LDrd8(3) { mmu.writeByte(registers.hl, it) } // LD (HL), d8
 
     }
 
@@ -140,7 +147,7 @@ class CPU(
         // TODO: Initialize CB opcodes
     }
 
-    private fun handleInterrupts(): Int {
+    private fun handleInterrupts(): Long {
         // TODO: Implement interrupt handling
         return 0
     }

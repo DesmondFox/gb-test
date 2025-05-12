@@ -4,24 +4,24 @@ object Opcodes {
     fun op0x00(cpu: CPU): Int {
         // NOP (No Operation)
 
-        return 4
+        return 1
     }
 
+    // JP a16 (Jump to address)
     fun op0xC3(cpu: CPU): Int {
-        // JP a16 (Jump to address)
         val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
         val highByte = cpu.mmu.readByte(cpu.registers.pc++)
         cpu.registers.pc = (highByte shl 8) or lowByte
-        return 16
+        return 4
     }
 
-    // LD, d16 instructions
-    fun ldRRD16(setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
+    // LD r16, d16
+    fun LDr16d16(setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
         val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
         val highByte = cpu.mmu.readByte(cpu.registers.pc++)
         val value = (highByte shl 8) or lowByte
         setReg(value)
-        12
+        3
     }
 
     // LD r8, r8
@@ -31,4 +31,12 @@ object Opcodes {
 
         cyclesCount
     }
+
+    // LD r, d8
+    fun LDrd8(cyclesCount: Int = 2, setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
+        val value = cpu.mmu.readByte(cpu.registers.pc++)
+        setReg(value)
+        cyclesCount
+    }
+
 }
