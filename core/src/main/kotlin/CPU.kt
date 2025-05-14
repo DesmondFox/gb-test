@@ -168,7 +168,16 @@ class CPU(
         opcodes[0x26] = Opcodes.LDrd8 { registers.h = it } // LD H, d8
         opcodes[0x36] = Opcodes.LDrd8(3) { mmu.writeByte(registers.hl, it) } // LD (HL), d8
 
-
+        // INC r
+        opcodes[0x04] = Opcodes.INCr(1, { it.registers.b }, { cpu, i -> cpu.registers.b = i }) // INC B
+        opcodes[0x14] = Opcodes.INCr(1, { it.registers.d }, { cpu, i -> cpu.registers.d = i }) // INC D
+        opcodes[0x24] = Opcodes.INCr(1, { it.registers.h }, { cpu, i -> cpu.registers.h = i }) // INC H
+        opcodes[0x34] =
+            Opcodes.INCr(3, { mmu.readByte(it.registers.hl) }, { cpu, i -> cpu.registers.hl = i }) // INC (HL)
+        opcodes[0x0C] = Opcodes.INCr(1, { it.registers.c }, { cpu, i -> cpu.registers.c = i }) // INC C
+        opcodes[0x1C] = Opcodes.INCr(1, { it.registers.e }, { cpu, i -> cpu.registers.e = i }) // INC E
+        opcodes[0x2C] = Opcodes.INCr(1, { it.registers.l }, { cpu, i -> cpu.registers.l = i }) // INC L
+        opcodes[0x3C] = Opcodes.INCr(1, { it.registers.a }, { cpu, i -> cpu.registers.a = i }) // INC A
     }
 
     private fun initializeCBOpcodes() {

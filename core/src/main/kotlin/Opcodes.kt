@@ -45,6 +45,17 @@ object Opcodes {
         cyclesCount
     }
 
+    // INC r
+    fun INCr(cyclesCount: Int, getReg: (CPU) -> Int, setReg: (CPU, Int) -> Unit): (CPU) -> Int = { cpu ->
+        val value = getReg(cpu)
+        val newValue = (value + 1) and 0xFF
+        setReg(cpu, newValue)
+        cpu.registers.setFlagZ(newValue == 0)
+        cpu.registers.setFlagN(false)
+        cpu.registers.setFlagH((value and 0x0F) + 1 > 0x0F)
+
+        cyclesCount
+    }
 
     fun incHL(cpu: CPU) {
         cpu.registers.hl = (cpu.registers.hl + 1) and 0xFFFF
