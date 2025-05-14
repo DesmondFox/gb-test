@@ -39,7 +39,7 @@ object Opcodes {
     }
 
     // LD r, d8
-    fun LDrd8(cyclesCount: Int = 2, setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
+    fun LDrd8(cyclesCount: Int = 8, setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
         val value = cpu.mmu.readByte(cpu.registers.pc++)
         setReg(value)
         cyclesCount
@@ -55,6 +55,30 @@ object Opcodes {
         cpu.registers.setFlagH((value and 0x0F) + 1 > 0x0F)
 
         cyclesCount
+    }
+
+    // DEC r
+    fun DECr(cyclesCount: Int, getReg: (CPU) -> Int, setReg: (CPU, Int) -> Unit): (CPU) -> Int = { cpu ->
+        val value = getReg(cpu)
+        val newValue = (value - 1) and 0xFF
+        setReg(cpu, newValue)
+        cpu.registers.setFlagZ(newValue == 0)
+        cpu.registers.setFlagN(true)
+        cpu.registers.setFlagH(value and 0x0F == 0)
+
+        cyclesCount
+    }
+
+    // JR {Condition}, s8
+    fun JR(condition: (CPU) -> Boolean): (CPU) -> Int = { cpu ->
+        val offset = cpu.mmu.readByte(cpu.registers.pc++).toByte()
+        if (condition(cpu)) {
+            cpu.registers.pc = (cpu.registers.pc + offset) and 0xFFFF
+
+            12
+        } else {
+            8
+        }
     }
 
     fun incHL(cpu: CPU) {
