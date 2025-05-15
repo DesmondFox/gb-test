@@ -39,9 +39,14 @@ object Opcodes {
     }
 
     // LD r, d8
-    fun LDrd8(cyclesCount: Int = 8, setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
+    fun LDrd8(
+        cyclesCount: Int = 8,
+        setReg: (Int) -> Unit,
+        doAfter: (CPU) -> Unit = {}
+    ): (CPU) -> Int = { cpu ->
         val value = cpu.mmu.readByte(cpu.registers.pc++)
         setReg(value)
+        doAfter(cpu)
         cyclesCount
     }
 
@@ -53,6 +58,15 @@ object Opcodes {
         cpu.registers.setFlagZ(newValue == 0)
         cpu.registers.setFlagN(false)
         cpu.registers.setFlagH((value and 0x0F) + 1 > 0x0F)
+
+        cyclesCount
+    }
+
+    // INC r16
+    fun INCr16(cyclesCount: Int, getReg: (CPU) -> Int, setReg: (CPU, Int) -> Unit): (CPU) -> Int = { cpu ->
+        val value = getReg(cpu)
+        val newValue = (value + 1) and 0xFFFF
+        setReg(cpu, newValue)
 
         cyclesCount
     }
@@ -69,6 +83,16 @@ object Opcodes {
         cyclesCount
     }
 
+    // DEC r16
+    fun DECr16(cyclesCount: Int, getReg: (CPU) -> Int, setReg: (CPU, Int) -> Unit): (CPU) -> Int = { cpu ->
+        val value = getReg(cpu)
+        val newValue = (value - 1) and 0xFFFF
+        setReg(cpu, newValue)
+
+        cyclesCount
+    }
+
+
     // JR {Condition}, s8
     fun JR(condition: (CPU) -> Boolean): (CPU) -> Int = { cpu ->
         val offset = cpu.mmu.readByte(cpu.registers.pc++).toByte()
@@ -79,6 +103,16 @@ object Opcodes {
         } else {
             8
         }
+    }
+
+    // LD (a16), SP
+    fun LD_SP_a16(): (CPU) -> Int = { cpu ->
+        val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
+        val highByte = cpu.mmu.readByte(cpu.registers.pc++)
+        val address = (highByte shl 8) or lowByte
+        cpu.mmu.writeWord(address, cpu.registers.sp)
+
+        20
     }
 
     fun incHL(cpu: CPU) {

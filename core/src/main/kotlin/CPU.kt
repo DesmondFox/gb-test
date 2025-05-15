@@ -57,7 +57,9 @@ class CPU(
                 registers.hl.toString(16).padStart(4, '0')
             }"
         )
+
         return cycles
+
     }
 
     private fun initializeOpcodes() {
@@ -165,12 +167,19 @@ class CPU(
             { Opcodes.decHL(this) }) // LD A, (HL-)
 
         // LD r8, d8
-        opcodes[0x0E] = Opcodes.LDrd8 { registers.c = it } // LD C, d8
-        opcodes[0x1E] = Opcodes.LDrd8 { registers.e = it } // LD E, d8
-        opcodes[0x2E] = Opcodes.LDrd8 { registers.l = it } // LD L, d8
-        opcodes[0x3E] = Opcodes.LDrd8 { registers.a = it } // LD A, d8
-        opcodes[0x26] = Opcodes.LDrd8 { registers.h = it } // LD H, d8
-        opcodes[0x36] = Opcodes.LDrd8(3) { mmu.writeByte(registers.hl, it) } // LD (HL), d8
+        opcodes[0x0E] = Opcodes.LDrd8(8, { registers.c = it }) // LD C, d8
+        opcodes[0x1E] = Opcodes.LDrd8(8, { registers.e = it }) // LD E, d8
+        opcodes[0x2E] = Opcodes.LDrd8(8, { registers.l = it }) // LD L, d8
+        opcodes[0x3E] = Opcodes.LDrd8(8, { registers.a = it }) // LD A, d8
+        opcodes[0x26] = Opcodes.LDrd8(8, { registers.h = it }) // LD H, d8
+        opcodes[0x36] = Opcodes.LDrd8(12, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
+        opcodes[0x06] = Opcodes.LDrd8(8, { registers.b = it }) // LD B, d8
+        opcodes[0x16] = Opcodes.LDrd8(8, { registers.d = it }) // LD D, d8
+        opcodes[0x26] = Opcodes.LDrd8(8, { registers.h = it }) // LD H, d8
+        opcodes[0x46] = Opcodes.LDrd8(3, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
+
+        // LD (a16), SP
+        opcodes[0x08] = Opcodes.LD_SP_a16() // LD (a16), SP
 
         // INC r
         opcodes[0x04] = Opcodes.INCr(4, { it.registers.b }, { cpu, i -> cpu.registers.b = i }) // INC B
@@ -183,6 +192,12 @@ class CPU(
         opcodes[0x2C] = Opcodes.INCr(4, { it.registers.l }, { cpu, i -> cpu.registers.l = i }) // INC L
         opcodes[0x3C] = Opcodes.INCr(4, { it.registers.a }, { cpu, i -> cpu.registers.a = i }) // INC A
 
+        // INC r16
+        opcodes[0x03] = Opcodes.INCr16(8, { it.registers.bc }, { cpu, i -> cpu.registers.bc = i }) // INC BC
+        opcodes[0x13] = Opcodes.INCr16(8, { it.registers.de }, { cpu, i -> cpu.registers.de = i }) // INC DE
+        opcodes[0x23] = Opcodes.INCr16(8, { it.registers.hl }, { cpu, i -> cpu.registers.hl = i }) // INC HL
+        opcodes[0x33] = Opcodes.INCr16(8, { it.registers.sp }, { cpu, i -> cpu.registers.sp = i }) // INC SP
+
         // DEC r
         opcodes[0x05] = Opcodes.DECr(4, { it.registers.b }, { cpu, i -> cpu.registers.b = i }) // DEC B
         opcodes[0x15] = Opcodes.DECr(4, { it.registers.d }, { cpu, i -> cpu.registers.d = i }) // DEC D
@@ -193,6 +208,12 @@ class CPU(
         opcodes[0x1D] = Opcodes.DECr(4, { it.registers.e }, { cpu, i -> cpu.registers.e = i }) // DEC E
         opcodes[0x2D] = Opcodes.DECr(4, { it.registers.l }, { cpu, i -> cpu.registers.l = i }) // DEC L
         opcodes[0x3D] = Opcodes.DECr(4, { it.registers.a }, { cpu, i -> cpu.registers.a = i }) // DEC A
+
+        // DEC e16
+        opcodes[0x0B] = Opcodes.DECr16(8, { it.registers.bc }, { cpu, i -> cpu.registers.bc = i }) // DEC BC
+        opcodes[0x1B] = Opcodes.DECr16(8, { it.registers.de }, { cpu, i -> cpu.registers.de = i }) // DEC DE
+        opcodes[0x2B] = Opcodes.DECr16(8, { it.registers.hl }, { cpu, i -> cpu.registers.hl = i }) // DEC HL
+        opcodes[0x3B] = Opcodes.DECr16(8, { it.registers.sp }, { cpu, i -> cpu.registers.sp = i }) // DEC SP
 
         // Jump instructions
         opcodes[0x20] = Opcodes.JR { !it.registers.getFlagZ() } // JR NZ, s8
