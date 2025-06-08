@@ -4,7 +4,7 @@ object Opcodes {
     fun op0x00(cpu: CPU): Int {
         // NOP (No Operation)
 
-        return 1
+        return 4
     }
 
     // JP a16 (Jump to address)
@@ -12,16 +12,16 @@ object Opcodes {
         val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
         val highByte = cpu.mmu.readByte(cpu.registers.pc++)
         cpu.registers.pc = (highByte shl 8) or lowByte
-        return 4
+        return 16
     }
 
     // LD r16, d16
-    fun LDr16d16(setReg: (Int) -> Unit): (CPU) -> Int = { cpu ->
+    fun LDr16d16(setReg: (CPU, Int) -> Unit): (CPU) -> Int = { cpu ->
         val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
         val highByte = cpu.mmu.readByte(cpu.registers.pc++)
         val value = (highByte shl 8) or lowByte
-        setReg(value)
-        3
+        setReg(cpu, value)
+        12
     }
 
     // LD r8, r8
@@ -94,7 +94,7 @@ object Opcodes {
 
 
     // JR {Condition}, s8
-    fun JR(condition: (CPU) -> Boolean): (CPU) -> Int = { cpu ->
+    fun JRs8(condition: (CPU) -> Boolean): (CPU) -> Int = { cpu ->
         val offset = cpu.mmu.readByte(cpu.registers.pc++).toByte()
         if (condition(cpu)) {
             cpu.registers.pc = (cpu.registers.pc + offset) and 0xFFFF
@@ -115,11 +115,36 @@ object Opcodes {
         20
     }
 
+    // LD (a16), A
+    fun LD_A_a16(): (CPU) -> Int = { cpu ->
+        val lowByte = cpu.mmu.readByte(cpu.registers.pc++)
+        val highByte = cpu.mmu.readByte(cpu.registers.pc++)
+        val address = (highByte shl 8) or lowByte
+        cpu.mmu.writeByte(address, cpu.registers.a)
+
+        16
+    }
+
     fun incHL(cpu: CPU) {
         cpu.registers.hl = (cpu.registers.hl + 1) and 0xFFFF
     }
 
     fun decHL(cpu: CPU) {
         cpu.registers.hl = (cpu.registers.hl - 1) and 0xFFFF
+    }
+
+    // DI
+    fun opToggleInterrupts(enabled: Boolean): (CPU) -> Int = { cpu ->
+        cpu.ime = enabled
+
+        4
+    }
+
+    // LDH (a8), A
+    fun LDH_a8_A(): (CPU) -> Int = { cpu ->
+        val address = (0xFF00 + cpu.mmu.readByte(cpu.registers.pc++)) and 0xFFFF
+        cpu.mmu.writeByte(address, cpu.registers.a)
+
+        12
     }
 }

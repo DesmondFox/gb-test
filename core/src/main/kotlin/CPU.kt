@@ -70,10 +70,10 @@ class CPU(
         opcodes[0xC3] = Opcodes::op0xC3 // JP a16
 
         // LD d16, r16
-        opcodes[0x01] = Opcodes.LDr16d16 { registers.bc = it } // LD BC, d16
-        opcodes[0x11] = Opcodes.LDr16d16 { registers.de = it } // LD DE, d16
-        opcodes[0x21] = Opcodes.LDr16d16 { registers.hl = it } // LD HL, d16
-        opcodes[0x31] = Opcodes.LDr16d16 { registers.sp = it } // LD SP, d16
+        opcodes[0x01] = Opcodes.LDr16d16 { cpu, value -> cpu.registers.bc = value } // LD BC, d16
+        opcodes[0x11] = Opcodes.LDr16d16 { cpu, value -> cpu.registers.de = value } // LD DE, d16
+        opcodes[0x21] = Opcodes.LDr16d16 { cpu, value -> cpu.registers.hl = value } // LD HL, d16
+        opcodes[0x31] = Opcodes.LDr16d16 { cpu, value -> cpu.registers.sp = value } // LD SP, d16
 
         // LD r8, r8
         opcodes[0x40] = Opcodes.LDr8r8(4, { registers.b = it }, { registers.b }) // LD B, B
@@ -175,11 +175,14 @@ class CPU(
         opcodes[0x36] = Opcodes.LDrd8(12, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
         opcodes[0x06] = Opcodes.LDrd8(8, { registers.b = it }) // LD B, d8
         opcodes[0x16] = Opcodes.LDrd8(8, { registers.d = it }) // LD D, d8
-        opcodes[0x26] = Opcodes.LDrd8(8, { registers.h = it }) // LD H, d8
         opcodes[0x46] = Opcodes.LDrd8(3, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
 
         // LD (a16), SP
         opcodes[0x08] = Opcodes.LD_SP_a16() // LD (a16), SP
+        // LD (a16), A
+        opcodes[0xEA] = Opcodes.LD_A_a16() // LD (a16), A
+        // LDH (a8), A
+        opcodes[0xE0] = Opcodes.LDH_a8_A() // LDH (a8), A
 
         // INC r
         opcodes[0x04] = Opcodes.INCr(4, { it.registers.b }, { cpu, i -> cpu.registers.b = i }) // INC B
@@ -216,10 +219,14 @@ class CPU(
         opcodes[0x3B] = Opcodes.DECr16(8, { it.registers.sp }, { cpu, i -> cpu.registers.sp = i }) // DEC SP
 
         // Jump instructions
-        opcodes[0x20] = Opcodes.JR { !it.registers.getFlagZ() } // JR NZ, s8
-        opcodes[0x30] = Opcodes.JR { !it.registers.getFlagC() } // JR NC, s8
-        opcodes[0x28] = Opcodes.JR { it.registers.getFlagZ() } // JR Z, s8
-        opcodes[0x38] = Opcodes.JR { it.registers.getFlagC() } // JR C, s8
+        opcodes[0x20] = Opcodes.JRs8 { !it.registers.getFlagZ() } // JR NZ, s8
+        opcodes[0x30] = Opcodes.JRs8 { !it.registers.getFlagC() } // JR NC, s8
+        opcodes[0x28] = Opcodes.JRs8 { it.registers.getFlagZ() } // JR Z, s8
+        opcodes[0x38] = Opcodes.JRs8 { it.registers.getFlagC() } // JR C, s8
+
+        // Enable / Disable Interrupts
+        opcodes[0xF3] = Opcodes.opToggleInterrupts(false) // DI
+        opcodes[0xFB] = Opcodes.opToggleInterrupts(true) // EI
 
 
     }

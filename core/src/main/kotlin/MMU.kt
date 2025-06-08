@@ -37,7 +37,7 @@ class MMU(
     fun writeByte(address: Int, value: Int) {
         // Simulate writing a byte to memory
         val addr = address and 0xFFFF
-        val byteValue = address.toByte()
+        val byteValue = value.toByte()
 
         when (addr) {
             in 0x0000..0x7FFF -> cartridge.writeRom(addr, byteValue) // Write to ROM
