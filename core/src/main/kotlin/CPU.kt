@@ -175,7 +175,6 @@ class CPU(
         opcodes[0x36] = Opcodes.LDrd8(12, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
         opcodes[0x06] = Opcodes.LDrd8(8, { registers.b = it }) // LD B, d8
         opcodes[0x16] = Opcodes.LDrd8(8, { registers.d = it }) // LD D, d8
-        opcodes[0x26] = Opcodes.LDrd8(8, { registers.h = it }) // LD H, d8
         opcodes[0x46] = Opcodes.LDrd8(3, { mmu.writeByte(registers.hl, it) }) // LD (HL), d8
 
         // LD (a16), SP
