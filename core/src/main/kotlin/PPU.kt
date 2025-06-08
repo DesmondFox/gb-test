@@ -9,7 +9,11 @@ class PPU {
     }
 
     fun writeVram(address: Int, byteValue: Byte) {
-
+        if (address in 0 until vram.size) {
+            vram[address] = byteValue
+        } else {
+            throw IllegalArgumentException("Address out of bounds: $address")
+        }
     }
 
     fun readOam(address: Int): Int {
