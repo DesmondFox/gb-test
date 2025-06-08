@@ -1,7 +1,5 @@
 package com.gh.desmondfox
 
-import java.io.File
-
 class GameConsole {
     suspend fun start() {
         val cartridge = Cartridge()
