@@ -49,4 +49,16 @@ class Registers {
     fun getFlagN() = (f and 0x40) != 0
     fun getFlagH() = (f and 0x20) != 0
     fun getFlagC() = (f and 0x10) != 0
+
+    fun getIndexedRegister(index: Int) = when (index) {
+        0 -> ::b
+        1 -> ::c
+        2 -> ::d
+        3 -> ::e
+        4 -> ::h
+        5 -> ::l
+        6 -> ::hl
+        7 -> ::a
+        else -> throw IllegalArgumentException("Invalid register index: $index")
+    }
 }

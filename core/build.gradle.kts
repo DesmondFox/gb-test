@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.0"
+    application
 }
 
 group = "com.gh.desmondfox"
@@ -18,4 +19,8 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(20)
+}
+
+application {
+    mainClass.set("com.gh.desmondfox.MainKt")
 }
