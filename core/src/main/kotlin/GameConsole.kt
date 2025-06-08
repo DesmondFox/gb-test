@@ -8,7 +8,7 @@ class GameConsole {
         val ppu = PPU()
         val mmu = MMU(
             cartridge = cartridge,
-            ppu = PPU(),
+            ppu = ppu,
         )
         val cpu = CPU(
             mmu = mmu
